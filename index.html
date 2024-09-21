@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Clock</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            align-items: center;
+            background-color: #937676;
+            flex-direction: column;
+            color: #fff !important;
+        }
+
+        .countdown {
+            display: flex;
+            gap: 10px;
+        }
+
+        .countdown-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .countdown-value {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .countdown-label {
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        #countdown {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        button#startCountdown {
+            width: 200px;
+            padding: 17px;
+            background-color: cornflowerblue;
+            color: white;
+            margin: 15px;
+            box-shadow: 5px 5px 15px #3f3333;
+        }
+
+        select#timezone {
+            margin: 20px;
+            width: min-content;
+        }
+
+        h1 {
+            margin: 10px 10px;
+        }
+
+        .countdown_main {
+            background-color: #002dc787;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main {
+            display: flex;
+            width: 100%;
+            height: 350px;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        select#timezone {
+            margin: 10px;
+            width: 70.2%;
+            padding: 10px;
+        }
+
+        .input {
+            width: 327px;
+            padding: 10px;
+            margin: 10px;
+            border: 2px solid white;
+        }
+
+        label#proper {
+            margin-right: 10%;
+        }
+
+        .proper {
+            display: flex;
+            align-items: baseline;
+        }
+
+        label {
+            width: 210px !important;
+        }
+
+        h4 {
+            margin: 7px;
+        }
+
+        p {
+            margin: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Event Countdown Timer</h1>
+    <h4>4th Project challenge</h4>
+    <p>Concepts Used: DOM Manipulation, Date Handling, setTimeout, HTML Insertion Methods</p>
+    <p>Challenge: Create an app that allows users to set a countdown for upcoming events. Display the remaining time
+        dynamically, and allow users to start, pause, and reset the timer</p>
+    <div class="main">
+        <div class="fields">
+            <div class="proper">
+                <label for="title">Countdown Title:</label>
+                <input type="text" id="title" placeholder="Event Name">
+            </div>
+            <div>
+                <label for="date">Countdown Date:</label>
+                <input type="date" id="date" value="2024-10-08" class="input">
+            </div>
+            <div>
+                <label for="time">Countdown Time:</label>
+                <input type="time" id="time" value="12:00" class="input">
+            </div>
+            <div>
+                <label id="proper" for="timezone">Timezone:</label>
+                <select id="timezone">
+                    <option value="(GMT+05:30) Chennai">(GMT+05:30) Chennai</option>
+                    <option value="(GMT+00:00) London">(GMT+00:00) London</option>
+                    <option value="(GMT+04:00) Dubai"> (GMT+04:00) Dubai</option>
+                    <option value="(GMT+08:00) Beijing"> (GMT+08:00) Beijing</option>
+                    <option value="(GMT+09:00) Tokyo"> (GMT+09:00) Tokyo</option>
+                    <option value="(GMT+10:00) Sydney"> (GMT+10:00) Sydney</option>
+                    <option value="(GMT+09:00) Seoul">(GMT+09:00) Seoul</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="countdown_main">
+            <div class="texts_title_date">
+                <h2 id="countdown-title"></h2>
+                <h4 id="countdown-date"></h4>
+            </div>
+            <div class="countdown">
+                <div class="countdown-item">
+                    <span class="countdown-value" id="days">00</span>
+                    <span class="countdown-label">Days</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-value" id="hours">00</span>
+                    <span class="countdown-label">Hours</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-value" id="minutes">00</span>
+                    <span class="countdown-label">Minutes</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-value" id="seconds">00</span>
+                    <span class="countdown-label">Seconds</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button id="startCountdown">Start Countdown</button>
+
+    <script>
+        const daysElement = document.getElementById('days');
+        const hoursElement = document.getElementById('hours');
+        const minutesElement = document.getElementById('minutes');
+        const secondsElement = document.getElementById('seconds');
+        const startCountdownButton = document.getElementById('startCountdown');
+        const timezoneSelect = document.getElementById('timezone');
+
+        const titleInput = document.getElementById('title');
+        const countdownTitleElement = document.getElementById('countdown-title');
+        const countdownBox = document.getElementById('countdown');
+        const dateInput = document.getElementById('date');
+        const countdownDateElement = document.getElementById('countdown-date');
+
+        let countdownInterval;
+        let offsetHours;
+
+        // Function to selected timezone
+        function getOffsetHours() {
+            const timezoneValue = timezoneSelect.value;
+            switch (timezoneValue) {
+                case '(GMT+05:30) Chennai':
+                    offsetHours = 5.5;
+                    break;
+                case '(GMT+00:00) London':
+                    offsetHours = 0;
+                    break;
+                case '(GMT+04:00) Dubai':
+                    offsetHours = 4;
+                    break;
+                case '(GMT+08:00) Beijing':
+                    offsetHours = 8;
+                    break;
+                case '(GMT+09:00) Tokyo':
+                    offsetHours = 9;
+                    break;
+                case '(GMT+10:00) Sydney':
+                    offsetHours = 10;
+                    break;
+                case '(GMT+09:00) Seoul':
+                    offsetHours = 9;
+                    break;
+                default:
+                    offsetHours = 0;
+            }
+        }
+
+        // Function to update the countdown display
+        function updateCountdown() {
+            const now = new Date();   // Get current date and time
+            const targetDate = new Date(    // Get countdown date and time
+                document.getElementById('date').value + ' ' +
+                document.getElementById('time').value
+            );
+            targetDate.setHours(targetDate.getHours() + offsetHours);   /* if the targetDate is 2023-03-15 14:30:00, this method would return 14.
+            setHours set object to the new value calculated*/
+            const difference = targetDate - now;    // Calculate the difference in milliseconds
+            // Convert milliseconds to days, hours, minutes, and seconds
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));   //round a number down to the nearest integer.
+            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+
+            daysElement.textContent = days.toString().padStart(2, '0');
+            hoursElement.textContent = hours.toString().padStart(2, '0');
+            minutesElement.textContent = minutes.toString().padStart(2, '0');
+            secondsElement.textContent = seconds.toString().padStart(2, '0');
+
+            const title = titleInput.value;
+            countdownTitleElement.textContent = title;
+
+            const dated = dateInput.value;
+            countdownDateElement.textContent = dated;
+
+            // If the countdown reaches zero
+            if (difference <= 0) {
+                clearInterval(countdownInterval);
+                daysElement.textContent = '00';
+                hoursElement.textContent = '00';
+                minutesElement.textContent = '00';
+                secondsElement.textContent = '00';
+                alert('Countdown finished!');
+            }
+        }
+
+        // start countdown button
+        startCountdownButton.addEventListener('click', () => {
+            getOffsetHours();
+            countdownInterval = setInterval(updateCountdown, 1000);// Start the countdown interval for every one second
+        });
+
+
+    </script>
+</body>
+
+</html>
